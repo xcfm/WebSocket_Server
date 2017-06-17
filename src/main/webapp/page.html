@@ -1,51 +1,62 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Testing websockets</title>
+	<title>Testing websockets</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 </head>
+
 <body>
-	<div>
-		<input type="submit" value="Start" onclick="start()" />
-	</div>
+	<div id="qrcode"></div>
 	<div id="messages"></div>
+	<script type="text/javascript" src="https://cdn.staticfile.org/jquery/3.2.1/jquery.min.js"></script>
+	<script type="text/javascript" src="https://cdn.staticfile.org/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
 	<script type="text/javascript">
-		var webSocket = 
+		var webSocket =
 			new WebSocket('ws://localhost:8080/fmz/websocket');
-		if(!webSocket){
-		document.getElementById('messages').innerHTML 
-				= '未连接'; 
-		}
-		
-		webSocket.onerror = function(event) {
+		webSocket.onerror = function (event) {
 			onError(event)
 		};
 
-		webSocket.onopen = function(event) {
+		webSocket.onopen = function (event) {
 			onOpen(event)
 		};
 
-		webSocket.onmessage = function(event) {
+		webSocket.onmessage = function (event) {
 			onMessage(event)
 		};
 
+		var text = document.getElementById('messages');
 		function onMessage(event) {
-			document.getElementById('messages').innerHTML 
-				+= '<br />' + event.data;
+			message = event.data;
+			if (message.indexOf('reg') == 0) {
+				createQRcode(message)
+			} else if (message == 'loginSuccess') {
+				text.innerHTML = '登陆成功';
+			} else {
+				text.innerHTML = '二维码已失效,请刷新后重试';
+			}
+			console.log(event)
 		}
 
 		function onOpen(event) {
-			document.getElementById('messages').innerHTML 
-				= 'Connection established';
+			text.innerHTML = '正在获取二维码';
+			webSocket.send('reg');
 		}
 
 		function onError(event) {
-			alert(event.data);
+			text.innerHTML = event.data;
 		}
+ 
+		function createQRcode(message) {
+			console.log(message)
+			text.innerHTML = ''
+			$(function () {
+				$('#qrcode').qrcode(message);
 
-		function start() {
-			webSocket.send('hello');
-			return false;
+			})
 		}
 	</script>
 </body>
+
 </html>

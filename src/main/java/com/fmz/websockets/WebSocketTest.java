@@ -16,35 +16,39 @@ public class WebSocketTest {
 	@OnMessage
     public void onMessage(String message, Session session) 
     	throws IOException, InterruptedException {
-		
-		// Print the client message for testing purposes
-		System.out.println("Received: " + message
-				+" \\From:"+session.getId()
-				);
-	
-		map.put(session.getId(), session);
-		// Send the first message to the client
-		session.getBasicRemote().sendText("This is the first server message");
-		// Send 3 messages to the client every 5 seconds
-		int sentMessages = 0;
-		while(sentMessages < 3){
-			Thread.sleep(5000);
-			session.getBasicRemote().
-				sendText("This is an intermediate server message. Count: " 
-					+ sentMessages);
-			sentMessages++;
+		String id =session.getId();
+		if(id==null ||id.equals("")){
+			id ="12345";
 		}
+		// Print the client message for testing purposes
+		System.out.println("Received: " + message +"  From:"+id ); 
+		if(!map.containsKey(session.getId())){
+			map.put(session.getId(), session);
+		} 
+		// Send the ID to the client if it is register;
+		if(message.equals("reg")){ 
+			session.getBasicRemote().sendText("reg"+session.getId()); 
+		}else if(message.startsWith("login")){
+			String[] a =message.split("-");
+			if(a.length!=2){
+				return; 
+			}
+			Session sess=	map.get(a[1]);
+			if(sess==null)
+				return;
+			sess.getBasicRemote().sendText("loginSuccess");
+		}
+	
 		
-		// Send a final message to the client
-		session.getBasicRemote().sendText("This is the last server message");
     }
-	/*@OnError
-	public void onError(Exception e){
-		e.printStackTrace();
-	}*/
+	@OnError
+	public void error(Session session, Throwable t) {
+        /* Remove this connection from the queue */
+		map.remove(session.getId());
+    }
 	@OnOpen
-    public void onOpen () {
-        System.out.println("Client connected");
+    public void onOpen (  ) {
+        System.out.println("Client connected"); 
     }
 
     @OnClose
