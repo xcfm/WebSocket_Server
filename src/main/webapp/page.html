@@ -33,6 +33,7 @@
 				createQRcode(message)
 			} else if (message == 'loginSuccess') {
 				text.innerHTML = '登陆成功';
+				$('#qrcode').hide();
 			} else {
 				text.innerHTML = '二维码已失效,请刷新后重试';
 			}
@@ -47,14 +48,17 @@
 		function onError(event) {
 			text.innerHTML = event.data;
 		}
- 
+
 		function createQRcode(message) {
 			console.log(message)
 			text.innerHTML = ''
-			$(function () {
-				$('#qrcode').qrcode(message);
-
-			})
+			$('#qrcode').qrcode(message);
+			// setTimeout(() => {
+			// 	if ($('#qrcode').is(":visible")) {
+			// 		$('#qrcode').hide();
+			// 		text.innerHTML = '二维码已失效,请刷新后重试'
+			// 	} 
+			// }, 30000)
 		}
 	</script>
 </body>
